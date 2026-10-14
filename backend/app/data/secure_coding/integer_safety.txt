@@ -1,0 +1,36 @@
+TOPIC: Integer Safety and Overflow Prevention
+CATEGORY: INTEGER_OVERFLOW
+APPLICABLE_VULNERABILITIES: INTEGER_OVERFLOW, integer overflow, integer underflow, signed overflow, wrap-around
+
+GUIDANCE:
+Integer arithmetic in C/C++ does not automatically detect overflow. Signed integer
+overflow is undefined behaviour under the C standard. Unsigned integer overflow wraps
+around silently, which can corrupt sizes and indices.
+
+Before performing addition, subtraction, multiplication, or shift operations, verify that
+the result will fit within the destination type:
+
+Addition guard:
+  if (a > INT_MAX - b) { handle_overflow(); }
+  result = a + b;
+
+Multiplication guard:
+  if (b != 0 && a > SIZE_MAX / b) { handle_overflow(); }
+  size_t total = a * b;
+
+Conversion guard (downcast):
+  if (value > UINT16_MAX) { handle_range_error(); }
+  uint16_t narrow = (uint16_t)value;
+
+Use unsigned types for sizes and indices. Avoid signed/unsigned mixing in comparisons
+(produces implementation-defined behaviour on mismatch).
+
+RATIONALE:
+Integer overflows in size computations used for malloc() or array indexing are a direct
+enabler of heap overflows. In automotive control systems, integer wrap-around in loop
+counters or safety thresholds can produce erroneous activation of actuators.
+Consistent with MISRA-oriented safe coding practices (similar in intent to MISRA C:2012
+Rules 10.1, 10.3, 10.4 on essential type model).
+
+REFERENCE: CWE-190; CERT C Secure Coding INT30-C, INT32-C, INT33-C; SEI CERT C
+SOURCE: secure_coding/integer_safety.txt

@@ -1,0 +1,13 @@
+TOPIC: Memory Safety
+CATEGORY: MEMORY_SAFETY
+APPLICABLE_VULNERABILITIES: MEMORY_CORRUPTION, use-after-free, double-free
+REFERENCE: CERT C Secure Coding MEM30-C
+SOURCE: automotive_guidelines/memory_safety.txt
+
+GUIDANCE:
+Avoid dynamic memory allocation (malloc, free) in critical execution paths to prevent fragmentation and exhaustion.
+If dynamic memory is used, strictly manage its lifecycle. Ensure every allocated block is freed exactly once.
+After freeing memory, immediately set the pointer to NULL to prevent use-after-free vulnerabilities.
+
+RATIONALE:
+Memory corruption and lifetime mismanagement can cause fatal exceptions in real-time embedded systems. This guidance is consistent with MISRA-oriented safe coding practices regarding dynamic memory.

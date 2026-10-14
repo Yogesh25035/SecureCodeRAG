@@ -1,0 +1,33 @@
+TOPIC: Historical Findings — Null Pointer Dereference in CAN Frame Parser
+CATEGORY: NULL_POINTER
+APPLICABLE_VULNERABILITIES: NULL_POINTER, null dereference
+
+FINDING:
+Type:     NULL_POINTER
+Severity: HIGH
+File:     can_rx_handler.c
+Line:     147
+
+Description:
+  A CAN receive handler allocated a temporary buffer using malloc() and immediately
+  dereferenced the returned pointer without checking for NULL. Under peak bus load,
+  the allocation failed, triggering a fault exception on the ARM Cortex-M processor.
+  The ECU entered a reset loop because the fault handler was not configured.
+
+Root Cause:
+  malloc() return value not checked. No memory exhaustion safeguard in the receive path.
+
+Evidence:
+  uint8_t *frame_buf = malloc(CAN_MAX_PAYLOAD);
+  frame_buf[0] = rx_data;  /* NULL dereference when malloc fails */
+
+Fix Applied:
+  Added NULL check after malloc. Added static memory pool to avoid dynamic allocation
+  in the receive ISR. Applied CERT C EXP34-C pattern.
+
+Lesson Learned:
+  Dynamic memory allocation in interrupt context is prohibited. Use statically allocated
+  ring buffers for interrupt-driven receive paths.
+
+REFERENCE: Internal project defect DB #CAN-2019-047; CERT C EXP34-C
+SOURCE: historical_findings/can_null_deref_2019.txt

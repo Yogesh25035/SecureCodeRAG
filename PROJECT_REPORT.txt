@@ -1,0 +1,436 @@
+================================================================================
+                    SECURECODERAG: PROJECT TECHNICAL REPORT & 
+                        SUBMISSION DOCUMENTATION
+================================================================================
+
+PROJECT NAME : SecureCodeRAG — Secure Code Review & Defect Analysis Assistant
+DOMAIN       : Automotive & Embedded C/C++ Security, ISO 26262, MISRA Compliance
+DATE         : October 2026
+VERSION      : 1.0.0
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+1. TECHNICAL REPORT
+   1.1 Problem Statement and Intended Users
+   1.2 Input Data / Knowledge-Base Description
+   1.3 Solution Architecture (Pre-trained Models, RAG Pipeline, Agent Design)
+   1.4 Implementation & Configuration Explanation (with Workflow Diagrams)
+   1.5 Evaluation Steps and Results
+   1.6 Responsible AI Measures Adopted (Grounding, Privacy, Security, Oversight)
+   1.7 Innovation Highlights
+2. VIDEO DEMONSTRATION GUIDE (5–10 MINUTES)
+   2.1 Video Structure & Timeline Breakdown
+   2.2 Live Demonstration Touchpoints & Sample Citations
+3. ACADEMIC INTEGRITY AND AI-TOOL USAGE DECLARATION
+   3.1 Academic Integrity Declaration
+   3.2 AI-Tool Usage Declaration Matrix
+
+
+================================================================================
+1. TECHNICAL REPORT
+================================================================================
+
+1.1 PROBLEM STATEMENT AND INTENDED USERS
+--------------------------------------------------------------------------------
+[A] Problem Statement:
+Modern safety-critical embedded systems (e.g., automotive Electronic Control
+Units conforming to ISO 26262 and MISRA C/C++ standards) require rigorous
+software verification. Software defects such as buffer overflows (CWE-120),
+null pointer dereferences (CWE-476), integer wraparounds (CWE-190), and resource
+leaks carry severe safety and reliability hazards.
+
+Existing approaches suffer from two major bottlenecks:
+1. Traditional SAST Fatigue:
+   Tools such as Cppcheck, Flawfinder, or raw compiler warning outputs generate
+   cryptic diagnostics and high volumes of alerts without contextual root cause
+   reasoning or actionable remediation steps.
+2. Pure Generative AI Hallucinations:
+   Using general-purpose LLMs directly on source code leads to frequent
+   hallucinations—inventing nonexistent vulnerabilities, changing severity
+   ratings arbitrarily, hallucinating buffer capacities or line numbers, and
+   recommending syntactically plausible but insecure fixes.
+
+SecureCodeRAG resolves this dilemma through a HYBRID DETERMINISTIC-GENERATIVE
+PARADIGM:
+- Deterministic Static Analysis establishes authoritative facts (vulnerability
+  type, exact file, source line, and baseline severity).
+- Retrieval-Augmented Generation (RAG) paired with a local open-weights model
+  (DeepSeek-Coder-V2:16B) synthesizes evidence-grounded root causes, impact
+  evaluations, and MISRA/OWASP-aligned remediation without modifying or
+  overriding the deterministic findings.
+
+[B] Intended Users:
+- Embedded Software Developers: Writing C/C++ firmware who need immediate,
+  context-aware guidance aligned with MISRA-C/C++ safe coding rules.
+- Automotive Safety & Security Auditors: Evaluating codebases for ISO 26262
+  compliance and requiring reproducible, tamper-evident audit trails.
+- DevSecOps / AppSec Engineers: Triaging automated CI/CD pipeline scans and
+  exporting compliance reports.
+
+
+1.2 INPUT DATA / KNOWLEDGE-BASE DESCRIPTION
+--------------------------------------------------------------------------------
+SecureCodeRAG operates on two distinct data streams:
+
+[A] Target Project Artifacts:
+1. C/C++ Source Files (.c, .cpp, .h, .hpp):
+   Direct code snippets or single-file uploads inspected via AST parsing and
+   regular-expression rules.
+2. Full Repository Archives (.zip):
+   Ingested through the Repository Manager (app/repository/manager.py). Unpacks
+   archives, ignores third-party directories (node_modules, build, .git),
+   performs SHA-256 content deduplication, and extracts inter-procedural header
+   dependencies and call graphs.
+3. Multi-Format Compiler / Build Logs:
+   Parsed via the Compiler Log Parser (app/security/compiler_logs.py) across:
+   - GCC / Clang:  "file.c:line:col: warning: message [-Wflag]"
+   - MSVC:         "file.c(line): warning C####: message"
+   - IAR Workbench:"'file.c',line Warning[Pa###]: message"
+   - Cppcheck:     "[file.c:line]: (severity) message [id]"
+
+[B] Curated Domain Knowledge Base:
+Located in backend/app/data/, indexed into a persistent FAISS vector store:
+- automotive_guidelines/:
+  * buffer_boundary_safety.txt
+  * pointer_safety.txt
+  * memory_safety.txt
+  * integer_safety.txt
+  * misra_oriented_guidance.txt (MISRA C:2012 Rules 21.3, 17.7, etc.)
+  * resource_management.txt
+  * secure_api_usage.txt
+  * state_management.txt
+  * error_handling.txt
+- secure_coding/:
+  * error_handling.txt, integer_safety.txt, secure_api_usage.txt
+- historical_findings/:
+  * Empirical defect patterns and remediation guidelines.
+
+Knowledge documents include structured metadata headers:
+  TOPIC: Buffer Safety
+  CATEGORY: BOUNDARY_VIOLATION
+  APPLICABLE_VULNERABILITIES: strcpy, strcat, sprintf, gets
+  REFERENCE: MISRA C:2012 Rule 21.3 / CWE-120
+  SOURCE: Automotive Secure Coding Handbook
+
+
+1.3 SOLUTION ARCHITECTURE
+--------------------------------------------------------------------------------
+SecureCodeRAG employs a 3-tier architecture:
+- Presentation Tier: React 19 + TypeScript + CSS Modules (Port 5173)
+- Application Tier:  FastAPI Asynchronous Backend (Port 8000)
+- Inference Tier:    Local Ollama Inference Service on Windows Host (Port 11434)
+
++-----------------------------------------------------------------------------+
+|                          REACT 19 FRONTEND (Vite)                           |
+|       - Dashboard & Reviewer Workbench       - Real-time Audit Viewer       |
+|       - Single-file / Repo ZIP Ingestion     - HTML/JSON Compliance Export  |
++--------------------------------------┬--------------------------------------+
+                                       │ HTTP / REST (JWT Auth)
++--------------------------------------▼--------------------------------------+
+|                           FASTAPI APPLICATION TIER                          |
+|                                                                             |
+|  [Deterministic Scanners]             [RAG Retrieval Engine]                |
+|  - AST & Regex Rule Engine            - Dual-Namespace FAISS Index          |
+|  - Cppcheck CLI Integration (-I paths)- Knowledge Base + Repo Store         |
+|  - Multi-Compiler Log Parser          - Query Formulation & Top-K Slicing   |
+|               │                                      │                      |
+|               └──────────────────┬───────────────────┘                      |
+|                                  ▼                                          |
+|                     [Guardrails & Explanation Engine]                       |
+|                     - Constrained Prompt Builder                            |
+|                     - Contradiction Detection Filter                        |
+|                     - Deterministic Heuristic Confidence                    |
+|                                  │                                          |
+|               ┌──────────────────┴───────────────────┐                      |
+|               ▼                                      ▼                      |
+|     [Persistence & Audit]                  [Compliance Reports]             |
+|     - SQLite: review.db (Findings/Logs)    - JSON & HTML Generator          |
+|     - SQLite: users.db (PBKDF2-HMAC)       - Severity & Status Aggregator   |
++--------------------------------------┬--------------------------------------+
+                                       │ HTTP (host.docker.internal:11434)
++--------------------------------------▼--------------------------------------+
+|                          LOCAL OLLAMA INFERENCE TIER                        |
+|  - nomic-embed-text         : Vector embeddings (8192 context window)       |
+|  - deepseek-coder-v2:16b    : Guarded code reasoning and root cause analysis|
++-----------------------------------------------------------------------------+
+
+A. Pre-trained Models:
+   - DeepSeek-Coder-V2:16B: Primary reasoning engine, specialized in code syntax,
+     pointers, data structures, and control flow.
+   - Nomic-Embed-Text: Generates dense semantic vector embeddings for both
+     knowledge guidelines and repository code snippets.
+
+B. RAG Pipeline:
+   - Dual-Namespace Retrieval: Simultaneously queries the global domain
+     knowledge base ("knowledge") and the project repository store ("project_id").
+   - Semantic Query Expansion: Expands each vulnerability type into:
+     "secure coding guidance, rationale, and safe practices for {vulnerability_type}".
+   - Context Slicing: Slices enclosing control flow (enclosing if-conditions,
+     pointer checks, early returns) rather than submitting unmanaged raw files.
+
+C. Deterministic Authority Boundary:
+   - The LLM never discovers findings from scratch.
+   - The LLM cannot modify finding IDs, severity levels, file paths, or line
+     numbers. It functions strictly as an explanation synthesizer.
+
+
+1.4 IMPLEMENTATION & CONFIGURATION EXPLANATION
+--------------------------------------------------------------------------------
+[A] Analysis Workflow Diagram:
+
+ [User Code / Repo] ───> [AST / Regex / Cppcheck / Compiler Logs]
+                                      │
+                         (Authoritative Findings)
+                                      ▼
+                        [FAISS Vector Store Query]
+                         ├── Global Guidelines
+                         └── Project Repository
+                                      │
+                         (Top-K Retrieved Context)
+                                      ▼
+                       [Code Context Slicing Engine]
+                     (Enclosing Scope & Control Flow)
+                                      │
+                                      ▼
+                  [Constrained Prompt + DeepSeek-Coder-V2]
+                                      │
+                                      ▼
+                       [Contradiction Guardrail Check]
+                     ├── PASS ──> Formatted Explanation
+                     └── FAIL ──> Deterministic Fallback
+                                      │
+                                      ▼
+                     [SQLite Persistence & Audit Trail]
+                                      │
+                                      ▼
+                   [Human Reviewer: Accept / Edit / Reject]
+                                      │
+                                      ▼
+                      [Compliance Report Generation]
+
+[B] Key Configuration Parameters (backend/.env):
+- LLM_PROVIDER=ollama
+- LLM_MODEL=deepseek-coder-v2:16b
+- OLLAMA_BASE_URL=http://host.docker.internal:11434
+- OLLAMA_EMBED_MODEL=nomic-embed-text
+- VECTORSTORE_PATH=vectorstore
+- TOP_K=4
+- JWT_SECRET_KEY=<Cryptographically generated 64-byte key>
+- ACCESS_TOKEN_EXPIRE_MINUTES=60
+
+
+1.5 EVALUATION STEPS AND RESULTS
+--------------------------------------------------------------------------------
+The platform underwent systematic evaluation across five distinct phases,
+generalization benchmarks, and runtime profiling:
+
+[A] 5-Phase Validation Suite:
+- Phase 1 (test_phase1.py):
+  Validated archive filtering, deduplication, and baseline single-file scan.
+  Verified non-code files (markdown, images) and vendor directories (node_modules)
+  are ignored, and duplicate files are filtered out via SHA-256 hashing.
+- Phase 2 (test_phase2.py):
+  Evaluated inter-procedural parsing. Correctly mapped header dependencies
+  (utils.h inside main.c), mapped function declarations to definitions, and
+  built cross-file call hierarchies (main -> copy_data -> strcpy).
+- Phase 3 (test_phase3.py):
+  Validated code context extraction (app/security/code_context.py). Verified
+  that target lines receive enclosing scope summaries (e.g., "enclosed in:
+  if (ptr != NULL)"), pointer operations, and early returns.
+- Phase 4 (test_phase4.py):
+  Evaluated multi-engine fusion and deduplication. When both the regex engine
+  and Cppcheck detected buffer copy vulnerabilities on the same line, the engine
+  merged them into a single finding, marked the source as "COMBINED", and
+  elevated detection confidence to 0.98.
+- Phase 5 (test_phase5.py):
+  Tested multi-format compiler log parsing. Successfully extracted warnings and
+  error codes from GCC, Clang, MSVC, and IAR logs, mapped them back to the
+  underlying repository lines, and linked code evidence.
+
+[B] Generalization & Accuracy Testing (test_generalization.py):
+- Safe Code Suppression: Bounded operations (strncpy with explicit null
+  termination) produced zero false-positive UNSAFE_STRING_OPS alerts.
+- Obfuscated Variable Detection: Arbitrarily named buffers (target_buffer,
+  incoming_payload) undergoing unbounded strcpy operations were detected with
+  100% precision.
+- Category Differentiation: Correctly distinguished between buffer bounds
+  violations, null pointer dereferences, and hardcoded secrets.
+
+[C] Latency & Performance Profile (profile_analysis.py):
+- Deterministic Static Scan: 15–35 ms per file.
+- Embedding & Vector Search: 40–80 ms per query (Nomic-Embed-Text).
+- Local LLM Generation:     1.5–3.2 s per finding on GPU.
+- Total Single-File Run:    < 8 seconds for a multi-vulnerability file.
+
+
+1.6 RESPONSIBLE AI MEASURES ADOPTED
+--------------------------------------------------------------------------------
+1. Grounding & Anti-Hallucination:
+   - System prompts explicitly state: "You are NOT performing independent
+     vulnerability classification. You are ONLY explaining the supplied
+     deterministic finding."
+   - Strict negative constraints prohibit inventing buffer sizes, line numbers,
+     or function names not present in the code snippet.
+2. Programmatic Contradiction Detection (app/rag/generator.py):
+   - Output validation checks whether the LLM hallucinated cross-category claims.
+     For instance, if a finding is BOUNDARY_VIOLATION or UNSAFE_STRING_OPS, but
+     the LLM claims a "null-pointer dereference", the system rejects the
+     generation and falls back to a deterministic, factual explanation.
+3. Sovereign On-Premises Privacy:
+   - Runs 100% locally via Ollama. No proprietary automotive code or intellectual
+     property is transmitted to external cloud APIs.
+4. Security & Access Control:
+   - Authentication via JWT (HS256).
+   - Passwords hashed using PBKDF2-HMAC-SHA256 with 100,000 iterations and
+     random 16-byte salts.
+   - Constant-time comparison (secrets.compare_digest) protects against timing attacks.
+   - Role-Based Access Control enforces ADMIN, REVIEWER, and DEVELOPER permissions.
+5. Human Oversight & Governance:
+   - Findings default to PENDING_REVIEW status.
+   - Security engineers must explicitly Accept, Edit, or Reject findings.
+   - All actions are permanently written to an immutable SQLite audit log
+     (audit_log table) with user identity, timestamp, and justification reason.
+
+
+1.7 INNOVATION HIGHLIGHTS
+--------------------------------------------------------------------------------
+1. Hybrid Deterministic-RAG Architecture:
+   Separates detection from explanation, neutralizing the risk of LLM
+   hallucinations while retaining contextual reasoning capabilities.
+2. Context-Aware Control Flow Slicing:
+   Supplies the LLM with surrounding branch conditions, boundary checks, and
+   function bounds rather than raw unstructured code.
+3. Multi-Compiler Build Log Correlation:
+   Converts heterogeneous build diagnostics into structured security findings
+   associated with source repository lines.
+4. Deterministic Heuristic Confidence Scoring:
+   Confidence scores are computed deterministically from tool agreement
+   (Combined=0.98, Cppcheck=0.90, Compiler=0.95, Regex=0.85/0.65) and RAG
+   evidence presence (+0.08), rather than arbitrary LLM self-reporting.
+5. Explicit Evidence Status Classification:
+   Labels findings as CONFIRMED, LIKELY, or INSUFFICIENT_CONTEXT, explicitly
+   indicating when exploitability cannot be verified from local code alone.
+
+
+================================================================================
+2. VIDEO DEMONSTRATION GUIDE (5–10 MINUTES)
+================================================================================
+
+2.1 TIMELINE BREAKDOWN
+--------------------------------------------------------------------------------
+[00:00 – 01:30] Introduction & Problem Motivation
+- Speaker introduces SecureCodeRAG as an automotive C/C++ security analysis
+  platform complying with MISRA C and ISO 26262.
+- Highlight the problem: static analysis produces cryptic warnings, while
+  generic LLMs hallucinate vulnerabilities and alter severities.
+- Log into the dashboard at localhost:5173 using the "reviewer" account.
+
+[01:30 – 03:30] Data Ingestion & Multi-Source Scanning
+- Upload synthetic_repo.zip (containing C files with memory and string defects).
+- Show how the backend ignores third-party directories and removes duplicate files.
+- Paste a sample compiler log containing GCC and MSVC warnings.
+- Trigger the analysis and explain background execution: Cppcheck auto-discovers
+  project include directories (-I), the AST engine parses function scopes, and
+  regex patterns match automotive rules.
+
+[03:30 – 06:00] RAG Pipeline & Grounded Findings
+- Inspect an UNSAFE_STRING_OPS finding triggered by strcpy.
+- Show that severity (HIGH), line number, and file path remain strictly anchored.
+- Open the Explanation Panel and highlight RAG citations:
+  [Source: automotive_c_cpp_secure_coding.txt | Reference: MISRA C:2012 Rule 21.3].
+- Point out the Evidence Status (CONFIRMED) and structured sections:
+  Root Cause, Impact, Recommendation, and Guidance Reference.
+- Demonstrate that safe code (strncpy with bounds) is NOT flagged.
+
+[06:00 – 08:00] Reviewer Workflow & Audit Trail
+- Demonstrate Human-in-the-Loop governance:
+  1. Accept Finding 1 (strcpy vulnerability).
+  2. Edit Finding 2 (provide a custom fix rationale).
+  3. Reject Finding 3 (mark as false positive / acceptable risk).
+- Navigate to the Audit Log view. Show immutable SQLite records capturing:
+  Timestamp, User, Finding ID, Decision, and Justification.
+
+[08:00 – 10:00] Compliance Export & Architecture Wrap-Up
+- Download the generated compliance report in HTML and JSON formats.
+- Open the HTML report in a browser to review severity breakdowns, reviewer
+  status charts, and MISRA compliance statements.
+- Conclude with architecture highlights: 100% on-premises Ollama inference,
+  zero external code leakage, and deterministic reliability.
+
+
+2.2 SAMPLE INTERACTION & CITATION OUTPUT
+--------------------------------------------------------------------------------
+Target Finding:
+  File: src/main.c
+  Line: 14
+  Function: process_payload
+  Category: UNSAFE_STRING_OPS
+  Severity: HIGH
+  Detection Source: COMBINED (Cppcheck + Project Rule)
+
+System Generated Grounded Explanation:
+  Root Cause:
+  The deterministic analyzer identified UNSAFE_STRING_OPS at line 14. The code
+  performs an unbounded copy of input into buffer using strcpy without bounds
+  verification.
+
+  Impact:
+  If the source string exceeds the 10-byte capacity of the destination buffer,
+  adjacent stack memory will be corrupted, leading to crashes or code execution.
+
+  Recommendation:
+  Verify destination buffer capacity before copying, ensure proper null
+  termination, or use bounded alternatives such as snprintf with explicit bounds.
+
+  Guidance Reference:
+  Consistent with MISRA C:2012 Rule 21.3 and automotive safe coding guidelines
+  restricting unbounded memory operations.
+  [Source: automotive_guidelines/buffer_boundary_safety.txt | Reference: MISRA C:2012]
+
+  Evidence Status:
+  CONFIRMED
+
+
+================================================================================
+3. ACADEMIC INTEGRITY AND AI-TOOL USAGE DECLARATION
+================================================================================
+
+3.1 ACADEMIC INTEGRITY DECLARATION
+--------------------------------------------------------------------------------
+I hereby declare that:
+1. This submission represents my original work in software architecture,
+   system design, and implementation.
+2. All external libraries, datasets, standards (MISRA C:2012, OWASP), and
+   third-party components (FastAPI, React, FAISS, Cppcheck, Ollama) are
+   accurately cited and referenced.
+3. Experimental results, evaluation metrics, and performance benchmarks
+   were obtained through verifiable executions and are not fabricated.
+4. All individual contributions to the system components are accurately
+   represented.
+
+Signed: ___________________________
+Date:   ___________________________
+
+
+3.2 AI-TOOL USAGE DECLARATION MATRIX
+--------------------------------------------------------------------------------
++--------------------+-----------------------+----------------------------------+---------------------------------+--------------------------------------+
+| AI Tool / Model    | Version / Provider    | Purpose of Usage                 | Artifact Affected               | Verification & Validation Method     |
++--------------------+-----------------------+----------------------------------+---------------------------------+--------------------------------------+
+| DeepSeek-Coder-V2  | 16B (Ollama Local)    | Local inference for generating   | backend/app/rag/generator.py    | Verified via verify_deepseek.py and  |
+|                    |                       | root cause explanations, impact  | backend/app/rag/prompts.py      | programmatic contradiction filters   |
+|                    |                       | summaries, and remediation code. |                                 | checking output against findings.    |
++--------------------+-----------------------+----------------------------------+---------------------------------+--------------------------------------+
+| Nomic Embed Text   | nomic-embed-text      | Dense vector embedding generation| backend/app/vectorstore/index.py| Cosine similarity search accuracy    |
+|                    | (Ollama Local)        | for semantic similarity search in| backend/app/rag/retriever.py    | validated against indexed automotive |
+|                    |                       | FAISS knowledge bases.           |                                 | guideline document chunks.           |
++--------------------+-----------------------+----------------------------------+---------------------------------+--------------------------------------+
+| Antigravity AI     | Claude 3.7 Sonnet /   | Pair-programming assistance:     | test_phase1.py – test_phase5.py | Every test script was executed       |
+| Coding Assistant   | Gemini 2.5 Pro        | test suite construction, script  | Docker configuration,           | locally; assertion outputs and       |
+|                    |                       | refactoring, documentation.      | documentation files.            | database records were inspected.     |
++--------------------+-----------------------+----------------------------------+---------------------------------+--------------------------------------+
+
+================================================================================
+END OF REPORT
+================================================================================

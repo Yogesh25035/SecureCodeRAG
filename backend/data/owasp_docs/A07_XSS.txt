@@ -1,0 +1,16 @@
+Cross-Site Scripting (A07:2021)
+
+Description:
+Unescaped user input is rendered in a web page, allowing attackers to execute malicious scripts in the browser.
+
+Vulnerable Pattern:
+document.innerHTML = user_input
+
+Impact:
+Attackers can steal cookies, session tokens, or manipulate the DOM.
+
+Fix:
+Escape user input before rendering and use secure frameworks.
+
+References:
+https://owasp.org/www-community/attacks/xss/

@@ -1,0 +1,40 @@
+TOPIC: Error Handling and Return Value Checking
+CATEGORY: ERROR_HANDLING
+APPLICABLE_VULNERABILITIES: ERROR_HANDLING, unchecked return value, ignored error, missing error check
+
+GUIDANCE:
+Every function that can signal failure through a return value or output parameter must
+have its return value checked at the call site. Silently ignoring errors is not permitted
+in safety-critical automotive code.
+
+Pattern:
+  int result = operation(args);
+  if (result != OPERATION_OK) {
+      log_error(result);
+      cleanup();
+      return ERROR_CODE;
+  }
+
+Specific requirements:
+  - malloc/calloc: check for NULL before any use.
+  - fopen/fread/fwrite/fclose: check return values; handle partial writes.
+  - system calls / OS API: check for negative return or error indicators.
+  - Custom driver APIs: check error codes against API specification.
+  - Do NOT use (void) cast to discard return values without a documented rationale.
+  - errno: always check errno immediately after a function that sets it; it is not
+    thread-safe in POSIX unless _reentrant variants are used.
+
+Error propagation:
+  - Each layer must propagate errors upward rather than silently swallowing them.
+  - A diagnostic event (DEM entry or fault log) should be recorded for recoverable errors.
+  - Non-recoverable faults must trigger safe-state transitions per ISO 26262 guidance.
+
+RATIONALE:
+Ignored error codes are consistently listed in CWE Top-25 (CWE-252, CWE-755).
+In automotive systems, an unhandled failure in a sensor read or actuator write may
+leave the vehicle in an unsafe operating state without any diagnostic indication.
+Consistent with MISRA-oriented safe coding practices (similar in intent to MISRA C:2012
+Rule 17.7 requiring use of return values).
+
+REFERENCE: CWE-252, CWE-755; CERT C Secure Coding ERR33-C; ISO 26262-6 §9.4
+SOURCE: secure_coding/error_handling.txt

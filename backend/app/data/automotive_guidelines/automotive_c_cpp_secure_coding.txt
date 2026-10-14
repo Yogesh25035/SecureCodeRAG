@@ -1,0 +1,13 @@
+TOPIC: Automotive C/C++ Secure Coding
+CATEGORY: AUTOMOTIVE_C_CPP_SECURE_CODING
+APPLICABLE_VULNERABILITIES: GENERAL, secure coding practices
+REFERENCE: ISO 26262
+SOURCE: automotive_guidelines/automotive_c_cpp_secure_coding.txt
+
+GUIDANCE:
+Automotive C/C++ secure coding requires a defensive mindset.
+Always validate inputs from untrusted sources, initialize variables before use, and avoid undefined behaviors.
+Follow a structured programming approach and ensure that all edge cases are handled predictably.
+
+RATIONALE:
+Automotive software often controls safety-critical systems. Undefined behavior, uninitialized variables, or unexpected inputs can lead to system failures that compromise vehicle safety. This is consistent with MISRA-oriented safe coding practices.

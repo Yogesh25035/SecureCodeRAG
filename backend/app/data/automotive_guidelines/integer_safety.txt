@@ -1,0 +1,13 @@
+TOPIC: Integer Safety
+CATEGORY: INTEGER_SAFETY
+APPLICABLE_VULNERABILITIES: INTEGER_OVERFLOW, integer underflow, sign extension
+REFERENCE: CERT C Secure Coding INT30-C, INT32-C
+SOURCE: automotive_guidelines/integer_safety.txt
+
+GUIDANCE:
+Validate all arithmetic operations to ensure they do not result in integer overflow or underflow.
+Be cautious of implicit type conversions and sign extensions.
+Ensure buffer size calculations and loop counters use appropriate data types (e.g., size_t).
+
+RATIONALE:
+Integer overflows can lead to incorrect buffer size allocations or bypassed bounds checks, leading to severe memory corruption. Ensuring integer safety is consistent with MISRA-oriented safe coding practices.

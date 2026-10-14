@@ -1,0 +1,13 @@
+TOPIC: State Management
+CATEGORY: STATE_MANAGEMENT
+APPLICABLE_VULNERABILITIES: STATE_MANAGEMENT, race condition, TOCTOU
+REFERENCE: CERT C Secure Coding CON43-C
+SOURCE: automotive_guidelines/state_management.txt
+
+GUIDANCE:
+Ensure thread safety when accessing shared state. Use appropriate synchronization primitives like mutexes.
+Avoid reliance on global variables. If globals are necessary, strictly control their access.
+Prevent Time-of-Check to Time-of-Use (TOCTOU) race conditions by locking resources during the check and use sequence.
+
+RATIONALE:
+Inconsistent state in concurrent automotive environments can lead to unpredictable actuator behavior or system crashes. Safe state management is consistent with MISRA-oriented safe coding practices.

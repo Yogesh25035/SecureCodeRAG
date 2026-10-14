@@ -1,0 +1,306 @@
+.container {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  margin-bottom: 1.5rem;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+/* Dark Theme */
+.container.dark {
+  background: linear-gradient(135deg, #1e1e2e 0%, #2d2d3d 100%);
+  border: 1px solid #3d3d5c;
+}
+
+.container.dark .lineNumbers {
+  background: #1a1a2e;
+  border-right: 1px solid #3d3d5c;
+}
+
+.container.dark .lineNumber {
+  color: #4b5563;
+}
+
+.container.dark .lineNumber.activeLine {
+  color: #e5e7eb;
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.container.dark .lineHighlight.activeHighlight {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.container.dark .editor {
+  color: #e5e7eb;
+}
+
+.container.dark .placeholder {
+  color: #6b7280;
+}
+
+.container.dark .editor::-webkit-scrollbar-track {
+  background: #1a1a2e;
+}
+
+.container.dark .editor::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.container.dark .editor::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+.container.dark .editor::-webkit-scrollbar-corner {
+  background: #1a1a2e;
+}
+
+/* Light Theme */
+.container.light {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border: 1px solid #e2e8f0;
+}
+
+.container.light .lineNumbers {
+  background: #f1f5f9;
+  border-right: 1px solid #e2e8f0;
+}
+
+.container.light .lineNumber {
+  color: #94a3b8;
+}
+
+.container.light .lineNumber.activeLine {
+  color: #1e293b;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.container.light .lineHighlight.activeHighlight {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.container.light .editor {
+  color: #1e293b;
+}
+
+.container.light .placeholder {
+  color: #94a3b8;
+}
+
+.container.light .editor::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.container.light .editor::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+.container.light .editor::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.container.light .editor::-webkit-scrollbar-corner {
+  background: #f1f5f9;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  border-bottom: 2px solid #3b82f6;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.lineCounter {
+  font-size: 0.85rem;
+  background: rgba(59, 130, 246, 0.2);
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  color: #93c5fd;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.themeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.themeToggle svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.themeToggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.themeToggle:active {
+  transform: scale(0.95);
+}
+
+/* Editor Wrapper */
+.editorWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.placeholder {
+  position: absolute;
+  top: 1rem;
+  left: 4.5rem;
+  pointer-events: none;
+  font-family: "Fira Code", "JetBrains Mono", "Courier New", monospace;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  z-index: 5;
+  transition: color 0.3s ease;
+}
+
+.typingText {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 3s steps(45) forwards;
+  width: 0;
+}
+
+.cursor {
+  animation: blink 1s step-end infinite;
+  font-weight: 300;
+  color: #3b82f6;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 45ch; }
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Editor Content */
+.editorContent {
+  display: flex;
+  min-height: 400px;
+  max-height: 500px;
+}
+
+.lineNumbers {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0;
+  user-select: none;
+  overflow: hidden;
+  min-width: 3.5rem;
+  transition: all 0.3s ease;
+}
+
+.lineNumber {
+  font-family: "Fira Code", "JetBrains Mono", "Courier New", monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  height: 1.6em;
+  padding: 0 1rem;
+  text-align: right;
+  transition: all 0.15s ease;
+}
+
+.lineNumber.activeLine {
+  font-weight: 600;
+}
+
+.codeArea {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.lineHighlights {
+  position: absolute;
+  top: 1rem;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.lineHighlight {
+  height: 1.6em;
+  line-height: 1.6;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+.editor {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  max-height: 500px;
+  padding: 1rem;
+  font-family: "Fira Code", "JetBrains Mono", "Courier New", monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  background: transparent;
+  border: none;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+  overflow-y: auto;
+  transition: color 0.3s ease;
+}
+
+.editor::selection {
+  background: rgba(59, 130, 246, 0.4);
+}
+
+.editor::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.editor::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+}

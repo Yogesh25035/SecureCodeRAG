@@ -1,0 +1,13 @@
+TOPIC: Pointer Safety
+CATEGORY: POINTER_SAFETY
+APPLICABLE_VULNERABILITIES: NULL_POINTER, pointer dereference
+REFERENCE: CERT C Secure Coding EXP34-C
+SOURCE: automotive_guidelines/pointer_safety.txt
+
+GUIDANCE:
+Always verify pointers are not NULL before dereferencing them.
+Initialize pointers to NULL or to a valid memory address when declared.
+Limit pointer arithmetic and keep indirection levels low to maintain readability.
+
+RATIONALE:
+Dereferencing an invalid or NULL pointer leads to immediate crashes or arbitrary code execution, which is catastrophic in automotive ECUs. Ensuring pointer safety is consistent with MISRA-oriented safe coding practices.

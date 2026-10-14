@@ -1,0 +1,16 @@
+SQL Injection (A03:2021)
+
+Description:
+Unsanitized user input is directly used in SQL queries, allowing attackers to manipulate the database.
+
+Vulnerable Pattern:
+query = "SELECT * FROM users WHERE id = " + user_input
+
+Impact:
+Attackers can read, modify, or delete sensitive data.
+
+Fix:
+Use parameterized queries or ORM frameworks safely.
+
+References:
+https://owasp.org/Top10/A03_2021-Injection/

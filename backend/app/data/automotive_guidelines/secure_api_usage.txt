@@ -1,0 +1,13 @@
+TOPIC: Secure API Usage
+CATEGORY: SECURE_API_USAGE
+APPLICABLE_VULNERABILITIES: SECURE_API_USAGE, UNSAFE_STRING_OPS, deprecated functions
+REFERENCE: CERT C Secure Coding STR31-C
+SOURCE: automotive_guidelines/secure_api_usage.txt
+
+GUIDANCE:
+Do not use unsafe APIs such as strcpy, strcat, sprintf, gets, or system.
+Use modern, safer alternatives like strncpy, strncat, and snprintf.
+Ensure third-party or standard library functions are called with correctly validated parameters.
+
+RATIONALE:
+Unsafe APIs are historically prone to buffer overflows and command injection. Avoiding them is consistent with MISRA-oriented safe coding practices and reduces the overall attack surface.

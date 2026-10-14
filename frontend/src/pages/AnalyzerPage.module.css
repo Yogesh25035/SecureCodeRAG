@@ -1,0 +1,249 @@
+.container {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  color: #1e293b;
+}
+
+.header {
+  background: linear-gradient(90deg, #0f172a 0%, #1e293b 50%, #0e7490 100%);
+  color: white;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border-bottom: 3px solid #06b6d4;
+  width: 100%;
+}
+
+.headerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  width: 100%;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.logoIcon {
+  color: #06b6d4;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.logo h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, #ffffff 0%, #67e8f9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Override for the login card (white background) where the
+   transparent text-fill trick makes the title invisible. */
+.loginLogo h1 {
+  background: linear-gradient(90deg, #0e7490 0%, #0f172a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  margin: 0.5rem 0 0 0;
+  font-size: 1rem;
+  color: #cbd5e1;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+.mainContent {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+}
+
+.splitLayout {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.leftPane {
+  flex: 1;
+  min-width: 0;
+}
+
+.rightPane {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .splitLayout {
+    flex-direction: column;
+  }
+}
+
+.controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.analyzeBtn,
+.clearBtn {
+  padding: 0.85rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  letter-spacing: 0.5px;
+}
+
+.analyzeBtn {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+.analyzeBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.analyzeBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.analyzeBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.clearBtn {
+  background: #f1f5f9;
+  color: #1e293b;
+  border: 2px solid #e2e8f0;
+  min-width: 120px;
+}
+
+.clearBtn:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  transform: translateY(-2px);
+}
+
+.clearBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.resultsSection {
+  animation: slideUp 0.4s ease;
+  width: 100%;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  color: #64748b;
+  font-size: 1.1rem;
+  border: 2px dashed #cbd5e1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.toastContainer {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 1.5rem 1rem;
+  }
+
+  .logo h1 {
+    font-size: 1.5rem;
+  }
+
+  .mainContent {
+    padding: 1.5rem 1rem;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .analyzeBtn {
+    min-width: unset;
+    max-width: unset;
+  }
+
+  .toastContainer {
+    left: 1rem;
+    right: 1rem;
+    max-width: unset;
+  }
+}

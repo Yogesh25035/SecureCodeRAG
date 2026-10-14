@@ -1,0 +1,167 @@
+.container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #1e293b;
+}
+
+.uploadSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fileLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fileLabel:hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileText {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.uploadBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #0f172a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.uploadBtn:hover:not(:disabled) {
+  background: #1e293b;
+}
+
+.uploadBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.projectInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.successHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  background: #ecfdf5;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #a7f3d0;
+}
+
+.fileList {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.listTitle {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: #334155;
+  font-size: 0.875rem;
+}
+
+.listItem:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.empty {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.resetBtn {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.resetBtn:hover {
+  background: #f1f5f9;
+}

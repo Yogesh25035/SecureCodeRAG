@@ -1,0 +1,16 @@
+Broken Access Control (A05:2021)
+
+Description:
+Users can access resources or perform actions they are not authorized to.
+
+Vulnerable Pattern:
+No checks on user roles or permissions before sensitive actions.
+
+Impact:
+Attackers can view, modify, or delete other users’ data.
+
+Fix:
+Implement strict server-side access control checks.
+
+References:
+https://owasp.org/Top10/A05_2021-Broken_Access_Control/

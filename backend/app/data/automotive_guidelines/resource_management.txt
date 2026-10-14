@@ -1,0 +1,13 @@
+TOPIC: Resource Management
+CATEGORY: RESOURCE_MANAGEMENT
+APPLICABLE_VULNERABILITIES: RESOURCE_MISUSE, resource leak, descriptor leak
+REFERENCE: CERT C Secure Coding MEM31-C
+SOURCE: automotive_guidelines/resource_management.txt
+
+GUIDANCE:
+Acquire and release resources (e.g., file descriptors, sockets, mutexes) in the same scope whenever possible.
+Implement deterministic release mechanisms (such as RAII in C++ or goto cleanup in C) to ensure resources are freed on all error paths.
+Check return values for resource acquisition operations.
+
+RATIONALE:
+Resource exhaustion can cause denial of service in critical vehicle systems. Proper resource lifecycle management is consistent with MISRA-oriented safe coding practices.

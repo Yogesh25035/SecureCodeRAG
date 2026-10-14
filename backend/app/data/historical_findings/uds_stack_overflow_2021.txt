@@ -1,0 +1,37 @@
+TOPIC: Historical Findings — Stack Buffer Overflow in Diagnostic UDS Handler
+CATEGORY: BOUNDARY_VIOLATION
+APPLICABLE_VULNERABILITIES: BOUNDARY_VIOLATION, buffer overflow, UNSAFE_STRING_OPS
+
+FINDING:
+Type:     BOUNDARY_VIOLATION
+Severity: CRITICAL
+File:     uds_service_0x22.c
+Line:     89
+
+Description:
+  A UDS (Unified Diagnostic Services) service handler for DID 0x22 (ReadDataByIdentifier)
+  copied a CAN/diagnostic payload into a fixed-size stack buffer using strcpy() without
+  length validation. An adversary could send a crafted extended-address diagnostic frame
+  with a payload exceeding the buffer size, overwriting the return address on the stack.
+
+Root Cause:
+  strcpy() used on externally sourced diagnostic payload.
+  No validation of payload length against destination buffer size.
+
+Evidence:
+  char did_payload[UDS_PAYLOAD_MAX];        /* fixed 64 bytes */
+  strcpy(did_payload, received_can_data);   /* overflow if > 64 bytes */
+
+Fix Applied:
+  - Replaced strcpy with strncpy(did_payload, received_can_data, sizeof(did_payload) - 1).
+  - Added explicit length validation: if (len > sizeof(did_payload) - 1) { return NRC_ROOR; }
+  - Added unit test with oversized payload.
+
+CVSS Score (internal assessment): 8.1 (High) — Network-accessible diagnostic interface.
+
+Lesson Learned:
+  Diagnostic handlers are a primary attack surface in connected vehicles.
+  All externally received data lengths must be validated against a maximum before copy.
+
+REFERENCE: Internal project defect DB #UDS-2021-003; CERT C STR31-C; CWE-121
+SOURCE: historical_findings/uds_stack_overflow_2021.txt

@@ -1,0 +1,36 @@
+TOPIC: Historical Findings — Integer Overflow in Signal Scaling
+CATEGORY: INTEGER_OVERFLOW
+APPLICABLE_VULNERABILITIES: INTEGER_OVERFLOW, integer overflow, arithmetic overflow
+
+FINDING:
+Type:     INTEGER_OVERFLOW
+Severity: HIGH
+File:     signal_scaling.c
+Line:     213
+
+Description:
+  A sensor signal scaling function multiplied a raw 16-bit ADC value by a calibration
+  gain factor stored as uint16_t. When gain values from a calibration file were at their
+  maximum, the intermediate product exceeded UINT32_MAX before being divided and cast
+  to the output range, resulting in a silent wraparound and an incorrect physical value
+  being sent to the vehicle dynamics controller.
+
+Root Cause:
+  Intermediate multiplication performed in 16-bit arithmetic before widening.
+  No overflow check before multiplication.
+
+Evidence:
+  uint16_t raw = read_adc();
+  uint16_t gain = cal_table[channel];
+  uint32_t scaled = raw * gain;   /* overflow: both operands are uint16_t */
+
+Fix Applied:
+  uint32_t scaled = (uint32_t)raw * (uint32_t)gain;  /* explicit widening cast */
+  if (scaled > OUTPUT_MAX_SCALED) { scaled = OUTPUT_MAX_SCALED; }
+
+Lesson Learned:
+  Always explicitly widen operands to a type that can hold the result of multiplication
+  before the operation is performed, not after.
+
+REFERENCE: Internal project defect DB #SIG-2022-011; CERT C INT30-C; CWE-190
+SOURCE: historical_findings/signal_integer_overflow_2022.txt

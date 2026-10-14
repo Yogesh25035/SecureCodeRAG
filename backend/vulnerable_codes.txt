@@ -1,0 +1,29 @@
+Example 1: Java SQL Injection
+
+String id = request.getParameter("id");
+String sql = "SELECT * FROM users WHERE id = " + id;
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery(sql);
+
+
+Example 2: Java Command Injection
+
+String userInput = request.getParameter("cmd");
+Runtime.getRuntime().exec("ping " + userInput);
+
+
+Example 3: Java XSS
+
+String name = request.getParameter("name");
+out.println("<html><body>Hello " + name + "</body></html>");
+
+
+Example 4: Java Hardcoded Credentials
+
+String password = "supersecret123";
+
+
+Example 5: Java Path Traversal
+
+String filename = request.getParameter("file");
+File file = new File("/var/data/" + filename);

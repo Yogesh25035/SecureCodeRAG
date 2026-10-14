@@ -1,0 +1,16 @@
+Cryptographic Failures (A02:2021)
+
+Description:
+Sensitive data is stored or transmitted without proper encryption or using weak algorithms.
+
+Vulnerable Pattern:
+Storing passwords as plaintext, using MD5, or sending data over HTTP.
+
+Impact:
+Attackers can steal sensitive data easily.
+
+Fix:
+Use strong encryption (AES, SHA-256) and HTTPS for transmission.
+
+References:
+https://owasp.org/Top10/A02_2021-Cryptographic_Failures/

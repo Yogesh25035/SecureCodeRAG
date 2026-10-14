@@ -1,0 +1,38 @@
+TOPIC: Secure API Usage in Automotive C/C++
+CATEGORY: SECURE_API_USAGE
+APPLICABLE_VULNERABILITIES: SECURE_API_USAGE, insecure function, deprecated API, unsafe API
+
+GUIDANCE:
+All API calls in automotive software must be reviewed against a permitted-function list
+and used only within their documented pre- and post-conditions.
+
+Banned or restricted C standard library functions (use alternatives as noted):
+  gets()        → fgets()
+  strcpy()      → strncpy() / strlcpy()
+  strcat()      → strncat() / strlcat()
+  sprintf()     → snprintf()
+  scanf()       → sscanf() with bounded input
+  atoi()        → strtol() with error checking
+  atof()        → strtod() with error checking
+  rand()        → hardware RNG or cryptographically seeded PRNG
+  system()      → not permitted in safety-critical code
+  setjmp/longjmp → not permitted (unstructured control flow)
+
+POSIX / OS API usage:
+  - Always validate file descriptors before use.
+  - Use O_CLOEXEC when opening file descriptors.
+  - Validate all paths against a whitelist; reject absolute paths from external input.
+
+Input validation:
+  - Validate length, range, and format of ALL externally sourced data before processing.
+  - Treat CAN messages, diagnostic inputs, and calibration data as untrusted.
+
+RATIONALE:
+Improper use of legacy C library functions is the primary source of memory safety
+vulnerabilities. In automotive ECUs receiving network or diagnostic input, external data
+that is not validated before API calls can be weaponised by remote attackers.
+Consistent with MISRA-oriented safe coding practices regarding restricted use of functions
+with undefined or implementation-defined behaviour.
+
+REFERENCE: CWE-676, CWE-20; CERT C Secure Coding API04-C; AUTOSAR C++14 A27-0-1
+SOURCE: secure_coding/secure_api_usage.txt

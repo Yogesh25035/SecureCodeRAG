@@ -1,0 +1,14 @@
+TOPIC: MISRA-Oriented Guidance
+CATEGORY: MISRA_ORIENTED_GUIDANCE
+APPLICABLE_VULNERABILITIES: GENERAL
+REFERENCE: MISRA C/C++ guidelines context
+SOURCE: automotive_guidelines/misra_oriented_guidance.txt
+
+GUIDANCE:
+Ensure all code aligns with defensive programming practices.
+Restrict the use of dynamic memory allocation where possible.
+Avoid complex pointer arithmetic and limit pointer indirection to manageable levels.
+Prefer simple and unambiguous language constructs over complex features.
+
+RATIONALE:
+While not claiming formal MISRA compliance, these principles are consistent with MISRA-oriented safe coding practices designed to increase code predictability, reliability, and security in embedded automotive environments.

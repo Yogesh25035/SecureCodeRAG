@@ -1,0 +1,13 @@
+TOPIC: Error Handling
+CATEGORY: ERROR_HANDLING
+APPLICABLE_VULNERABILITIES: ERROR_HANDLING, unhandled exception, ignored return value
+REFERENCE: CERT C Secure Coding ERR33-C
+SOURCE: automotive_guidelines/error_handling.txt
+
+GUIDANCE:
+Always check the return values of functions that can fail, especially those handling memory, I/O, or APIs.
+Ensure the system fails securely. Do not ignore errors or exceptions.
+Log failure events accurately without exposing sensitive internal state.
+
+RATIONALE:
+Ignoring errors can lead the system into an inconsistent or unsafe state. Proper error handling ensures predictable failure modes and is consistent with MISRA-oriented safe coding practices.

@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: securecoderag-backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/vectorstore:/app/vectorstore
+      - ./backend/data:/app/data
+    restart: unless-stopped
+    # Optional: allows backend to reach Ollama on the host machine
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build: ./frontend
+    container_name: securecoderag-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # OPTIONAL: Uncomment to run Ollama entirely within Docker
+  # ollama:
+  #   image: ollama/ollama
+  #   container_name: securecoderag-ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   restart: unless-stopped
+
+# volumes:
+#   ollama_data:

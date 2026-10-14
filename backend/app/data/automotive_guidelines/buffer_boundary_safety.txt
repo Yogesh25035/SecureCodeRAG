@@ -1,0 +1,14 @@
+TOPIC: Buffer and Boundary Safety
+CATEGORY: BUFFER_BOUNDARY_SAFETY
+APPLICABLE_VULNERABILITIES: BOUNDARY_VIOLATION, buffer overflow, out-of-bounds write
+REFERENCE: CWE-120; CERT C Secure Coding STR31-C
+SOURCE: automotive_guidelines/buffer_boundary_safety.txt
+
+GUIDANCE:
+All copy, write, and indexing operations on fixed-size buffers must be explicitly bounded.
+Always use length-limiting variants of memory and string functions (e.g., strncpy, snprintf).
+Ensure destination buffers are properly null-terminated.
+Array indexing must always be bounds-checked.
+
+RATIONALE:
+Buffer overflows are a major source of critical vulnerabilities. Restricting unbounded memory operations prevents corruption of adjacent safety-critical variables and is consistent with MISRA-oriented safe coding practices.

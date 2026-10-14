@@ -1,0 +1,107 @@
+name: SecureCodeRAG CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install backend dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Format backend code (Black)
+        run: |
+          source venv/bin/activate
+          pip install black
+          black backend/app
+
+      - name: Lint backend
+        run: |
+          source venv/bin/activate
+          pip install flake8
+          # Never fail on long lines
+          flake8 backend/app --max-line-length=500 --extend-ignore=E203,W503
+
+      - name: Type check backend
+        run: |
+          source venv/bin/activate
+          pip install mypy
+          mypy backend/app --ignore-missing-imports
+
+      - name: Run backend tests
+        run: |
+          source venv/bin/activate
+          pip install pytest
+          pytest backend/tests -v
+
+      - name: Validate backend Dockerfile
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: false
+
+  frontend:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Cache Node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Lint frontend
+        run: npx eslint ./src --max-warnings=0
+
+      - name: Type check frontend
+        run: npx tsc --noEmit
+
+      - name: Run frontend tests
+        run: npm test -- --watchAll=false
+
+      - name: Validate frontend Dockerfile
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: false

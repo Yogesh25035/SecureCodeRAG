@@ -1,0 +1,16 @@
+Broken Authentication (A01:2021)
+
+Description:
+Authentication mechanisms are weak or misconfigured, allowing attackers to compromise accounts.
+
+Vulnerable Pattern:
+Default passwords, missing MFA, session fixation.
+
+Impact:
+Attackers can log in as other users and escalate privileges.
+
+Fix:
+Use strong password policies, multi-factor authentication, and secure session management.
+
+References:
+https://owasp.org/Top10/A01_2021-Broken_Authentication/

@@ -1,0 +1,149 @@
+.container {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e8eef7;
+}
+
+.header {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  border-bottom: 2px solid #8b5cf6;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.content {
+  padding: 1rem;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.card:last-child {
+  margin-bottom: 0;
+}
+
+.card:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.cardHeader h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #0f172a;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.titleIcon {
+  color: #f97316;
+}
+
+.severity {
+  padding: 0.35rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.severity.critical {
+  background: #fee2e2;
+  color: #7f1d1d;
+  border: 1px solid #fca5a5;
+}
+
+.severity.high {
+  background: #fed7aa;
+  color: #7c2d12;
+  border: 1px solid #fb923c;
+}
+
+.severity.medium {
+  background: #fef08a;
+  color: #713f12;
+  border: 1px solid #facc15;
+}
+
+.severity.low {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.explanation {
+  background: #f0f9ff;
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 4px solid #8b5cf6;
+  margin-bottom: 1rem;
+  line-height: 1.7;
+  color: #1e293b;
+}
+
+.explanation p {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.sources {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sources h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: #0f172a;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sources ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.sources li {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
