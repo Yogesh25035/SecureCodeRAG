@@ -15,7 +15,7 @@ MAX_LOG_SIZE = 10 * 1024 * 1024  # 10 MB
 async def upload_build_log(
     file: UploadFile = File(...),
     project_id: Optional[str] = Form(default=None),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """
     Upload a compiler/build log file.
@@ -38,7 +38,7 @@ async def upload_build_log(
     if ext not in allowed_exts:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported file type '{ext}'. Allowed: {allowed_exts}"
+            detail=f"Unsupported file type '{ext}'. Allowed: {allowed_exts}",
         )
 
     raw_bytes = await file.read()
@@ -60,7 +60,7 @@ async def upload_build_log(
             "status": "ok",
             "warnings_found": 0,
             "findings": [],
-            "message": "No parseable compiler warnings found in the log."
+            "message": "No parseable compiler warnings found in the log.",
         }
 
     # ----------------------------------------------------------------
@@ -72,6 +72,7 @@ async def upload_build_log(
             from app.repository.manager import ingest_repository
             import os
             from app.api.repositories import _get_repo_path_by_id  # optional helper
+
             # Attempt to load repo content for association
             repo_path = _get_repo_path_by_id(project_id)
             if repo_path and os.path.exists(repo_path):
@@ -108,27 +109,29 @@ async def upload_build_log(
             "Configure LLM_PROVIDER for AI-generated explanation."
         )
         confidence = calculate_confidence(
-            {"type": "COMPILER_WARNING", "severity": w.get("severity", "MEDIUM")},
-            []
+            {"type": "COMPILER_WARNING", "severity": w.get("severity", "MEDIUM")}, []
         )
 
         # AI explanation using compiler-specific prompt
         if llm and rag_prompt:
             try:
-                rag_query = f"compiler warning {w.get('code', '')} {w.get('message', '')}"
+                rag_query = (
+                    f"compiler warning {w.get('code', '')} {w.get('message', '')}"
+                )
                 context_docs = []
                 if retriever:
                     context_docs = retriever.retrieve(
-                        rag_query,
-                        top_k=2,
-                        project_id=project_id
+                        rag_query, top_k=2, project_id=project_id
                     )
 
-                context = "\n\n".join(
-                    doc.page_content.strip()
-                    for doc in context_docs[:2]
-                    if hasattr(doc, "page_content") and doc.page_content.strip()
-                ) or "No specific guidance retrieved."
+                context = (
+                    "\n\n".join(
+                        doc.page_content.strip()
+                        for doc in context_docs[:2]
+                        if hasattr(doc, "page_content") and doc.page_content.strip()
+                    )
+                    or "No specific guidance retrieved."
+                )
 
                 prompt = rag_prompt.format(
                     file_path=w.get("file_path", w.get("file", "unknown")),
@@ -138,7 +141,7 @@ async def upload_build_log(
                     compiler_message=w.get("message", ""),
                     source=w.get("source", "COMPILER"),
                     code_snippet=w.get("code_snippet", w.get("code", "Not available")),
-                    context=context
+                    context=context,
                 )
 
                 response = llm.invoke(prompt)
@@ -150,25 +153,30 @@ async def upload_build_log(
 
                 # Recalculate with evidence docs
                 confidence = calculate_confidence(
-                    {"type": "COMPILER_WARNING", "severity": w.get("severity", "MEDIUM")},
-                    context_docs
+                    {
+                        "type": "COMPILER_WARNING",
+                        "severity": w.get("severity", "MEDIUM"),
+                    },
+                    context_docs,
                 )
             except Exception as e:
                 print(f"[WARNING] LLM explanation failed: {e}")
 
-        findings.append({
-            "type": "COMPILER_WARNING",
-            "severity": w.get("severity", "MEDIUM"),
-            "file": w.get("file_path", w.get("file", "unknown")),
-            "line": w.get("line", 0),
-            "code": w.get("code", ""),
-            "warning_code": w.get("code", "N/A"),
-            "message": w.get("message", ""),
-            "source": "COMPILER",
-            "repo_found": w.get("repo_found", False),
-            "explanation": explanation,
-            "confidence": confidence,
-        })
+        findings.append(
+            {
+                "type": "COMPILER_WARNING",
+                "severity": w.get("severity", "MEDIUM"),
+                "file": w.get("file_path", w.get("file", "unknown")),
+                "line": w.get("line", 0),
+                "code": w.get("code", ""),
+                "warning_code": w.get("code", "N/A"),
+                "message": w.get("message", ""),
+                "source": "COMPILER",
+                "repo_found": w.get("repo_found", False),
+                "explanation": explanation,
+                "confidence": confidence,
+            }
+        )
 
     return {
         "status": "ok",
@@ -181,7 +189,6 @@ async def upload_build_log(
 def _get_repo_path_by_id(project_id: str):
     """Resolve a repo_id back to its disk path inside data/repos."""
     import os
-    base = os.path.join(
-        os.path.dirname(__file__), "..", "data", "repos", project_id
-    )
+
+    base = os.path.join(os.path.dirname(__file__), "..", "data", "repos", project_id)
     return os.path.normpath(base) if os.path.exists(base) else None

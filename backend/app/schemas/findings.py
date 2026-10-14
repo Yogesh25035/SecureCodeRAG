@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
 from enum import Enum
+
 
 class SeverityEnum(str, Enum):
     CRITICAL = "CRITICAL"
@@ -9,11 +10,13 @@ class SeverityEnum(str, Enum):
     LOW = "LOW"
     INFO = "INFO"
 
+
 class FindingStatus(str, Enum):
     PENDING_REVIEW = "PENDING_REVIEW"
     ACCEPTED = "ACCEPTED"
     EDITED = "EDITED"
     REJECTED = "REJECTED"
+
 
 class StructuredFinding(BaseModel):
     finding_id: str

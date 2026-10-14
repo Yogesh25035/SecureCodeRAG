@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
+from app.schemas.findings import StructuredFinding
+
 
 class Vulnerability(BaseModel):
     type: str
@@ -11,7 +13,6 @@ class Vulnerability(BaseModel):
     function_name: Optional[str] = None
     source: str = "PROJECT_RULE"
 
-from app.schemas.findings import StructuredFinding
 
 class AnalysisResponse(BaseModel):
     vulnerabilities: List[StructuredFinding]
@@ -19,7 +20,7 @@ class AnalysisResponse(BaseModel):
     summary: Optional[str] = None
     status: str = "SUCCESS"
     warnings: List[str] = []
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -28,12 +29,12 @@ class AnalysisResponse(BaseModel):
                         "type": "SQL Injection",
                         "severity": "high",
                         "line": 1,
-                        "code": "query = f\"SELECT * FROM users WHERE id={user_id}\"",
+                        "code": 'query = f"SELECT * FROM users WHERE id={user_id}"',
                         "explanation": "This code is vulnerable to SQL injection...",
-                        "confidence": 0.95
+                        "confidence": 0.95,
                     }
                 ],
                 "total_vulnerabilities": 1,
-                "summary": "Found 1 high severity vulnerability"
+                "summary": "Found 1 high severity vulnerability",
             }
         }

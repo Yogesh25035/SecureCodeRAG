@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 env_path = Path(__file__).parent.parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
+
 class Settings:
     PROJECT_NAME = "Secure Code Review RAG Agent"
 
@@ -30,13 +31,18 @@ class Settings:
     CONFIDENCE_HIGH = 0.75
     CONFIDENCE_MEDIUM = 0.45
 
+
 settings = Settings()
 
 # ── Security checks at startup ──────────────────────────────────────────────
 if not settings.JWT_SECRET_KEY:
     if settings.ENVIRONMENT == "production":
-        print("[FATAL] JWT_SECRET_KEY is not set. Refusing to start in production mode.")
-        print("        Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(64))\"")
+        print(
+            "[FATAL] JWT_SECRET_KEY is not set. Refusing to start in production mode."
+        )
+        print(
+            '        Generate one with: python -c "import secrets; print(secrets.token_urlsafe(64))"'
+        )
         sys.exit(1)
     else:
         settings.JWT_SECRET_KEY = settings._DEV_FALLBACK_KEY
@@ -44,7 +50,9 @@ if not settings.JWT_SECRET_KEY:
         print("          Set JWT_SECRET_KEY env var before deployment!")
 
 if settings.ENVIRONMENT == "production" and settings.LLM_PROVIDER == "dummy":
-    print("[WARNING] LLM_PROVIDER is 'dummy' in production mode. AI explanations will be unavailable.")
+    print(
+        "[WARNING] LLM_PROVIDER is 'dummy' in production mode. AI explanations will be unavailable."
+    )
 
 # Confirm key is loaded without leaking any key material
 if settings.GEMINI_API_KEY:

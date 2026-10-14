@@ -31,7 +31,7 @@ class StaticScanner:
         line_num: int,
         line: str,
         description: str = "",
-        source: str = "PROJECT_RULE"
+        source: str = "PROJECT_RULE",
     ):
         vulnerabilities.append(
             {
@@ -41,7 +41,7 @@ class StaticScanner:
                 "line": line_num,
                 "code": line.strip(),
                 "description": description,
-                "source": source
+                "source": source,
             }
         )
 
@@ -88,7 +88,9 @@ class StaticScanner:
                         escaped = False
                     elif char == "\\":
                         escaped = True
-                    elif (state == "string" and char == '"') or (state == "char" and char == "'"):
+                    elif (state == "string" and char == '"') or (
+                        state == "char" and char == "'"
+                    ):
                         state = "code"
                 index += 1
                 continue
@@ -281,8 +283,7 @@ class StaticScanner:
 
             # Detect fixed-size arrays
             match = re.search(
-                r"\b(?:char|int|short|long|float|double)"
-                r"\s+(\w+)\s*\[\s*(\d+)\s*\]",
+                r"\b(?:char|int|short|long|float|double)" r"\s+(\w+)\s*\[\s*(\d+)\s*\]",
                 stripped,
             )
 
@@ -389,9 +390,7 @@ class StaticScanner:
         division_pattern = re.compile(
             r"(?<![/%])/(?![/])\s*(?P<divisor>[A-Za-z_]\w*|[-+]?\d+)"
         )
-        guard_pattern = re.compile(
-            r"\bif\s*\([^)]*\b{divisor}\b\s*(?:!=|>)\s*0"
-        )
+        guard_pattern = re.compile(r"\bif\s*\([^)]*\b{divisor}\b\s*(?:!=|>)\s*0")
 
         for index, line in enumerate(lines):
             match = division_pattern.search(line)
@@ -405,9 +404,14 @@ class StaticScanner:
             guarded = False
             if not divisor.lstrip("+-").isdigit():
                 guard = guard_pattern.pattern.format(divisor=re.escape(divisor))
-                previous_lines = lines[max(0, index - 5):index]
-                guarded = any(re.search(guard, previous, re.IGNORECASE) for previous in previous_lines)
-                guarded = guarded or bool(re.search(guard, line[:match.start()], re.IGNORECASE))
+                previous_lines = lines[max(0, index - 5) : index]
+                guarded = any(
+                    re.search(guard, previous, re.IGNORECASE)
+                    for previous in previous_lines
+                )
+                guarded = guarded or bool(
+                    re.search(guard, line[: match.start()], re.IGNORECASE)
+                )
             if guarded:
                 continue
 
@@ -449,11 +453,15 @@ class StaticScanner:
                     existing["source"] = "COMBINED"
                     if "supporting_evidence" not in existing:
                         existing["supporting_evidence"] = []
-                    existing["supporting_evidence"].append({
-                        "source": vuln.get("source"),
-                        "severity": vuln.get("severity"),
-                        "description": vuln.get("description", vuln.get("message", ""))
-                    })
+                    existing["supporting_evidence"].append(
+                        {
+                            "source": vuln.get("source"),
+                            "severity": vuln.get("severity"),
+                            "description": vuln.get(
+                                "description", vuln.get("message", "")
+                            ),
+                        }
+                    )
 
         return list(unique_map.values())
 
@@ -528,13 +536,9 @@ class StaticScanner:
         # 6. Remove duplicates
         # -----------------------------------------------------
 
-        vulnerabilities = self._deduplicate(
-            vulnerabilities
-        )
+        vulnerabilities = self._deduplicate(vulnerabilities)
 
         # Sort by source-code line
-        vulnerabilities.sort(
-            key=lambda x: x["line"]
-        )
+        vulnerabilities.sort(key=lambda x: x["line"])
 
         return vulnerabilities

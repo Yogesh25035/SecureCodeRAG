@@ -2,7 +2,6 @@ import subprocess
 import os
 import re
 import shutil
-import glob
 from typing import List, Dict, Optional
 
 
@@ -15,7 +14,7 @@ def _find_include_dirs(repo_path: str) -> List[str]:
     include_dirs: set[str] = set()
     for root, _dirs, files in os.walk(repo_path):
         for f in files:
-            if f.endswith(('.h', '.hpp')):
+            if f.endswith((".h", ".hpp")):
                 include_dirs.add(root)
                 break  # one header is enough to mark this directory
     return sorted(include_dirs)
@@ -31,7 +30,7 @@ def _collect_project_headers(repo_path: str) -> Dict[str, str]:
     headers: Dict[str, str] = {}
     for root, _dirs, files in os.walk(repo_path):
         for f in files:
-            if f.endswith(('.h', '.hpp')) and f not in headers:
+            if f.endswith((".h", ".hpp")) and f not in headers:
                 headers[f] = os.path.join(root, f)
     return headers
 
@@ -58,25 +57,20 @@ def run_cppcheck(repo_path: str) -> List[Dict]:
 
     try:
         cmd = [
-            'cppcheck',
-            '--enable=all',
-            '--xml',
-            '--inconclusive',
-            '--suppress=missingIncludeSystem',
+            "cppcheck",
+            "--enable=all",
+            "--xml",
+            "--inconclusive",
+            "--suppress=missingIncludeSystem",
         ]
 
         # Add every directory that contains a header as an include path
         for inc_dir in _find_include_dirs(repo_path):
-            cmd.extend(['-I', inc_dir])
+            cmd.extend(["-I", inc_dir])
 
-        cmd.append('.')
+        cmd.append(".")
 
-        result = subprocess.run(
-            cmd,
-            cwd=repo_path,
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(cmd, cwd=repo_path, capture_output=True, text=True)
 
         # cppcheck outputs XML to stderr
         xml_output = result.stderr
@@ -88,7 +82,9 @@ def run_cppcheck(repo_path: str) -> List[Dict]:
 
     except FileNotFoundError:
         # cppcheck is not installed
-        print("cppcheck is not installed. AI/static pattern analysis is still available.")
+        print(
+            "cppcheck is not installed. AI/static pattern analysis is still available."
+        )
         return []
     except Exception as e:
         print(f"Error running cppcheck: {e}")
@@ -128,13 +124,13 @@ def map_cppcheck_severity(rule_id: str, severity: str) -> str:
         return "INFO"
 
     return {
-        'error': 'HIGH',
-        'warning': 'MEDIUM',
-        'style': 'LOW',
-        'performance': 'LOW',
-        'portability': 'LOW',
-        'information': 'INFO'
-    }.get(severity, 'INFO')
+        "error": "HIGH",
+        "warning": "MEDIUM",
+        "style": "LOW",
+        "performance": "LOW",
+        "portability": "LOW",
+        "information": "INFO",
+    }.get(severity, "INFO")
 
 
 # ─── XML parser ──────────────────────────────────────────────────────────────
@@ -142,35 +138,38 @@ def map_cppcheck_severity(rule_id: str, severity: str) -> str:
 
 def parse_cppcheck_xml(xml_content: str, repo_path: str) -> List[Dict]:
     import xml.etree.ElementTree as ET
+
     findings = []
     try:
         root = ET.fromstring(xml_content)
-        errors = root.find('errors')
+        errors = root.find("errors")
         if errors is None:
             return findings
 
-        for error in errors.findall('error'):
-            msg = error.get('msg', '')
-            severity = error.get('severity', 'style')
-            rule_id = error.get('id', '')
+        for error in errors.findall("error"):
+            msg = error.get("msg", "")
+            severity = error.get("severity", "style")
+            rule_id = error.get("id", "")
 
             # Map cppcheck severity to our scale
             mapped_severity = map_cppcheck_severity(rule_id, severity)
             category = map_cppcheck_category(rule_id)
 
-            for location in error.findall('location'):
-                file_path = location.get('file', '')
-                line_num = int(location.get('line', 0))
+            for location in error.findall("location"):
+                file_path = location.get("file", "")
+                line_num = int(location.get("line", 0))
 
-                findings.append({
-                    "file": file_path,
-                    "line": line_num,
-                    "severity": mapped_severity,
-                    "message": msg,
-                    "rule": rule_id,
-                    "source": "cppcheck",
-                    "category": category
-                })
+                findings.append(
+                    {
+                        "file": file_path,
+                        "line": line_num,
+                        "severity": mapped_severity,
+                        "message": msg,
+                        "rule": rule_id,
+                        "source": "cppcheck",
+                        "category": category,
+                    }
+                )
     except Exception as e:
         print(f"Failed to parse cppcheck XML: {e}")
 
@@ -210,16 +209,16 @@ def run_cppcheck_on_repo_file(
 
     try:
         cmd = [
-            'cppcheck',
-            '--enable=all',
-            '--xml',
-            '--inconclusive',
-            '--suppress=missingIncludeSystem',
-            f'--language={language}',
+            "cppcheck",
+            "--enable=all",
+            "--xml",
+            "--inconclusive",
+            "--suppress=missingIncludeSystem",
+            f"--language={language}",
         ]
 
         for inc_dir in _find_include_dirs(repo_path):
-            cmd.extend(['-I', inc_dir])
+            cmd.extend(["-I", inc_dir])
 
         cmd.append(abs_file)
 
@@ -237,7 +236,7 @@ def run_cppcheck_on_repo_file(
         raw_findings = parse_cppcheck_xml(xml_output, repo_path)
 
         # Read source for line-content lookup
-        with open(abs_file, 'r', encoding='utf-8', errors='replace') as fh:
+        with open(abs_file, "r", encoding="utf-8", errors="replace") as fh:
             lines = fh.read().splitlines()
 
         formatted: List[Dict] = []
@@ -245,15 +244,17 @@ def run_cppcheck_on_repo_file(
             line_num = finding.get("line", 1)
             line_content = lines[line_num - 1] if 0 < line_num <= len(lines) else ""
 
-            formatted.append({
-                "type": finding.get("rule", "CPPCHECK_ISSUE"),
-                "severity": finding.get("severity", "LOW"),
-                "category": finding.get("category", "STATIC_ANALYSIS"),
-                "line": line_num,
-                "code": line_content.strip(),
-                "description": finding.get("message", ""),
-                "source": "CPPCHECK",
-            })
+            formatted.append(
+                {
+                    "type": finding.get("rule", "CPPCHECK_ISSUE"),
+                    "severity": finding.get("severity", "LOW"),
+                    "category": finding.get("category", "STATIC_ANALYSIS"),
+                    "line": line_num,
+                    "code": line_content.strip(),
+                    "description": finding.get("message", ""),
+                    "source": "CPPCHECK",
+                }
+            )
 
         return formatted
 
@@ -303,7 +304,7 @@ def run_cppcheck_on_code(
     try:
         # Write the source file
         src_path = os.path.join(tmp_dir, f"analysis{ext}")
-        with open(src_path, 'w', encoding='utf-8') as f:
+        with open(src_path, "w", encoding="utf-8") as f:
             f.write(code)
 
         # Copy project headers into the temp workspace so Cppcheck can
@@ -330,19 +331,19 @@ def run_cppcheck_on_code(
 
         # Build the Cppcheck command
         cmd = [
-            'cppcheck',
-            '--enable=all',
-            '--xml',
-            '--inconclusive',
-            '--suppress=missingIncludeSystem',
-            f'--language={language}',
+            "cppcheck",
+            "--enable=all",
+            "--xml",
+            "--inconclusive",
+            "--suppress=missingIncludeSystem",
+            f"--language={language}",
         ]
 
         # Always include the temp dir itself (where we placed the headers)
-        cmd.extend(['-I', tmp_dir])
+        cmd.extend(["-I", tmp_dir])
 
         for inc_dir in include_dirs:
-            cmd.extend(['-I', inc_dir])
+            cmd.extend(["-I", inc_dir])
 
         cmd.append(src_path)
 
@@ -366,15 +367,17 @@ def run_cppcheck_on_code(
             line_num = finding.get("line", 1)
             line_content = lines[line_num - 1] if 0 < line_num <= len(lines) else ""
 
-            formatted_findings.append({
-                "type": finding.get("rule", "CPPCHECK_ISSUE"),
-                "severity": finding.get("severity", "LOW"),
-                "category": finding.get("category", "STATIC_ANALYSIS"),
-                "line": line_num,
-                "code": line_content.strip(),
-                "description": finding.get("message", ""),
-                "source": "CPPCHECK",
-            })
+            formatted_findings.append(
+                {
+                    "type": finding.get("rule", "CPPCHECK_ISSUE"),
+                    "severity": finding.get("severity", "LOW"),
+                    "category": finding.get("category", "STATIC_ANALYSIS"),
+                    "line": line_num,
+                    "code": line_content.strip(),
+                    "description": finding.get("message", ""),
+                    "source": "CPPCHECK",
+                }
+            )
 
         return formatted_findings
 

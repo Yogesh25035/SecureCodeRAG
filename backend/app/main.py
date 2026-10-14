@@ -9,11 +9,7 @@ from app.api.build_logs import router as build_logs_router
 from app.api.auth import router as auth_router
 from app.core.config import settings
 
-
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    version="1.0.0"
-)
+app = FastAPI(title=settings.PROJECT_NAME, version="1.0.0")
 
 # CORS (React frontend)
 app.add_middleware(
@@ -24,40 +20,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(
-    auth_router,
-    prefix="/api/auth",
-    tags=["auth"]
-)
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
+
+app.include_router(analyze_router, prefix="/api")
 
 app.include_router(
-    analyze_router,
-    prefix="/api"
+    repositories_router, prefix="/api/repositories", tags=["repositories"]
 )
 
-app.include_router(
-    repositories_router,
-    prefix="/api/repositories",
-    tags=["repositories"]
-)
+app.include_router(review_router, prefix="/api/review", tags=["review"])
 
-app.include_router(
-    review_router,
-    prefix="/api/review",
-    tags=["review"]
-)
+app.include_router(reports_router, prefix="/api/reports", tags=["reports"])
 
-app.include_router(
-    reports_router,
-    prefix="/api/reports",
-    tags=["reports"]
-)
-
-app.include_router(
-    build_logs_router,
-    prefix="/api/build-log",
-    tags=["build-log"]
-)
+app.include_router(build_logs_router, prefix="/api/build-log", tags=["build-log"])
 
 
 @app.get("/health")

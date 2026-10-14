@@ -2,18 +2,19 @@ import json
 from datetime import datetime
 import html
 
+
 def generate_report_data(project_id: str, findings: list, audit_logs: list) -> dict:
     timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
-    
+
     # Calculate summary by severity
     severity_summary = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "INFO": 0}
-    
+
     # Calculate summary by category
     category_summary = {}
-    
+
     # Reviewer status counts
     status_summary = {"PENDING_REVIEW": 0, "ACCEPTED": 0, "EDITED": 0, "REJECTED": 0}
-    
+
     # Get repo_version from latest audit log if available
     repo_version = "UNKNOWN"
     if audit_logs:
@@ -21,54 +22,61 @@ def generate_report_data(project_id: str, findings: list, audit_logs: list) -> d
             if log.get("repo_version"):
                 repo_version = log.get("repo_version")
                 break
-                
+
     # Combine findings with their audit data
     enriched_findings = []
-    
+
     for f in findings:
         sev = f.get("severity", "INFO").upper()
         if sev in severity_summary:
             severity_summary[sev] += 1
-            
+
         cat = f.get("category", "Uncategorized")
         category_summary[cat] = category_summary.get(cat, 0) + 1
-        
+
         status = f.get("status", "PENDING_REVIEW")
         status_summary[status] = status_summary.get(status, 0) + 1
-            
+
         # Find related audit log for this finding (latest analysis event)
-        f_audit = [a for a in audit_logs if a.get("finding_id") == f.get("finding_id") and a.get("event_type") == "ANALYSIS"]
+        f_audit = [
+            a
+            for a in audit_logs
+            if a.get("finding_id") == f.get("finding_id")
+            and a.get("event_type") == "ANALYSIS"
+        ]
         latest_audit = f_audit[0] if f_audit else {}
-        
+
         rag_sources = []
         if latest_audit.get("rag_sources"):
             try:
                 rag_sources = json.loads(latest_audit.get("rag_sources"))
-            except:
+            except Exception:
                 pass
-                
-        enriched_findings.append({
-            "finding_id": f.get("finding_id"),
-            "status": status,
-            "severity": sev,
-            "category": cat,
-            "title": f.get("title"),
-            "file": f.get("file"),
-            "line_start": f.get("line_start"),
-            "function": f.get("function"),
-            "confidence": f.get("confidence"),
-            "diagnostic_message": f.get("diagnostic_message"),
-            "evidence_status": f.get("evidence_status", "INSUFFICIENT_CONTEXT"),
-            "source": f.get("source"),
-            "rule": f.get("rule"),
-            "evidence": f.get("evidence"), # Source evidence
-            "finding": f.get("finding"), # Static-analysis evidence / explanation
-            "root_cause": f.get("root_cause"),
-            "recommendation": f.get("recommendation"), # AI recommendation
-            "suggested_fix": f.get("suggested_fix"),
-            "rag_references": rag_sources
-        })
-        
+
+        enriched_findings.append(
+            {
+                "finding_id": f.get("finding_id"),
+                "status": status,
+                "severity": sev,
+                "category": cat,
+                "title": f.get("title"),
+                "file": f.get("file"),
+                "line_start": f.get("line_start"),
+                "function": f.get("function"),
+                "confidence": f.get("confidence"),
+                "diagnostic_message": f.get("diagnostic_message"),
+                "evidence_status": f.get("evidence_status", "INSUFFICIENT_CONTEXT"),
+                "source": f.get("source"),
+                "rule": f.get("rule"),
+                "evidence": f.get("evidence"),  # Source evidence
+                "finding": f.get("finding"),  # Static-analysis evidence / explanation
+                "root_cause": f.get("root_cause"),
+                "recommendation": f.get("recommendation"),  # AI recommendation
+                "suggested_fix": f.get("suggested_fix"),
+                "rag_references": rag_sources,
+            }
+        )
+
     return {
         "project_info": {
             "project_id": project_id,
@@ -78,14 +86,16 @@ def generate_report_data(project_id: str, findings: list, audit_logs: list) -> d
         "summaries": {
             "severity": severity_summary,
             "category": category_summary,
-            "status": status_summary
+            "status": status_summary,
         },
-        "findings": enriched_findings
+        "findings": enriched_findings,
     }
+
 
 def generate_json_report(project_id: str, findings: list, audit_logs: list) -> str:
     data = generate_report_data(project_id, findings, audit_logs)
     return json.dumps(data, indent=2)
+
 
 def generate_html_report(project_id: str, findings: list, audit_logs: list) -> str:
     data = generate_report_data(project_id, findings, audit_logs)
@@ -93,7 +103,7 @@ def generate_html_report(project_id: str, findings: list, audit_logs: list) -> s
     ss = data["summaries"]["severity"]
     sc = data["summaries"]["category"]
     st = data["summaries"]["status"]
-    
+
     html_out = f"""
     <html>
     <head>
@@ -166,14 +176,20 @@ def generate_html_report(project_id: str, findings: list, audit_logs: list) -> s
             
             <h2>Detailed Findings ({len(data['findings'])})</h2>
     """
-    
-    for f in data['findings']:
+
+    for f in data["findings"]:
         rag_html = ""
-        if f['rag_references']:
-            rag_html = "<ul>" + "".join(f"<li>{html.escape(str(r))}</li>" for r in f['rag_references']) + "</ul>"
+        if f["rag_references"]:
+            rag_html = (
+                "<ul>"
+                + "".join(
+                    f"<li>{html.escape(str(r))}</li>" for r in f["rag_references"]
+                )
+                + "</ul>"
+            )
         else:
             rag_html = "<em>No RAG references retrieved for this finding.</em>"
-            
+
         html_out += f"""
             <div class="finding {f['severity']}">
                 <h3>[{html.escape(f['finding_id'])}] {html.escape(f['title'])}</h3>
@@ -204,7 +220,7 @@ def generate_html_report(project_id: str, findings: list, audit_logs: list) -> s
                 {rag_html}
             </div>
         """
-        
+
     html_out += """
         </div>
     </body>

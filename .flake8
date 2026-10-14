@@ -1,0 +1,7 @@
+[flake8]
+max-line-length = 500
+extend-ignore = E203,W503,W291,W293
+exclude = backend/app/data/repos
+per-file-ignores =
+    backend/app/rag/prompts.py:E501
+

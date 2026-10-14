@@ -4,8 +4,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def build_missing_include_explanation(vulnerability: dict) -> str:
-    header = vulnerability.get("description") or vulnerability.get("code") or "The header could not be resolved."
+    header = (
+        vulnerability.get("description")
+        or vulnerability.get("code")
+        or "The header could not be resolved."
+    )
     return (
         "Root Cause:\n"
         f"Cppcheck reported an unresolved include: {header}\n\n"
@@ -34,11 +39,7 @@ class ExplanationGenerator:
         self.llm = get_llm()
         self.prompt = EXPLANATION_PROMPT
 
-    def generate_explanation(
-        self,
-        vulnerability: dict,
-        context_docs: list
-    ) -> str:
+    def generate_explanation(self, vulnerability: dict, context_docs: list) -> str:
         rule = str(vulnerability.get("rule") or vulnerability.get("type") or "").lower()
         if rule in {"missinginclude", "missingincludesystem"}:
             return build_missing_include_explanation(vulnerability)
@@ -51,7 +52,7 @@ class ExplanationGenerator:
         for doc in context_docs[:2]:
             if hasattr(doc, "page_content"):
                 content = doc.page_content.strip()
-                
+
                 # Append metadata for citations
                 if hasattr(doc, "metadata"):
                     meta = doc.metadata
@@ -71,30 +72,16 @@ class ExplanationGenerator:
         # 2. Deterministic finding information
         # ---------------------------------------------------------
         vulnerability_type = (
-            vulnerability.get("category")
-            or vulnerability.get("type")
-            or "UNKNOWN"
+            vulnerability.get("category") or vulnerability.get("type") or "UNKNOWN"
         )
 
-        severity = vulnerability.get(
-            "severity",
-            "UNKNOWN"
-        )
+        severity = vulnerability.get("severity", "UNKNOWN")
 
-        file_path = vulnerability.get(
-            "file",
-            "unknown"
-        )
+        file_path = vulnerability.get("file", "unknown")
 
-        line_num = vulnerability.get(
-            "line",
-            "unknown"
-        )
+        line_num = vulnerability.get("line", "unknown")
 
-        code_snippet = vulnerability.get(
-            "code",
-            ""
-        )
+        code_snippet = vulnerability.get("code", "")
 
         # ---------------------------------------------------------
         # 3. Build controlled prompt
@@ -105,7 +92,7 @@ class ExplanationGenerator:
             file_path=file_path,
             line_num=line_num,
             code_snippet=code_snippet,
-            context=context
+            context=context,
         )
 
         # ---------------------------------------------------------
@@ -113,8 +100,9 @@ class ExplanationGenerator:
         # ---------------------------------------------------------
         try:
             import time
+
             start_t_llm = time.time()
-            print(f"[TIMING] LLM generation started...")
+            print("[TIMING] LLM generation started...")
             response = self.llm.invoke(prompt)
             elapsed_llm = time.time() - start_t_llm
             print(f"[TIMING] LLM generation finished in {elapsed_llm:.3f}s")
@@ -123,24 +111,31 @@ class ExplanationGenerator:
                 result = response.content.strip()
             else:
                 result = str(response).strip()
-                
+
             if not result:
                 raise ValueError("Empty response from LLM")
-                
+
             if len(result) > 2000:
                 raise ValueError("Response from LLM excessively long")
-                
+
             result_lower = result.lower()
-            
+
             # Contradiction Detection
             if vulnerability_type in ["BOUNDARY_VIOLATION", "UNSAFE_STRING_OPS"]:
-                if "null-pointer dereference" in result_lower or "dereferencing a null pointer" in result_lower:
-                    raise ValueError(f"LLM contradicted finding by claiming null pointer dereference for {vulnerability_type}")
+                if (
+                    "null-pointer dereference" in result_lower
+                    or "dereferencing a null pointer" in result_lower
+                ):
+                    raise ValueError(
+                        f"LLM contradicted finding by claiming null pointer dereference for {vulnerability_type}"
+                    )
 
             return result
 
         except Exception as e:
-            logger.error(f"[ExplanationGenerator] AI explanation failed at validation/inference stage. Exception type: {type(e).__name__}, Message: {str(e)}")
+            logger.error(
+                f"[ExplanationGenerator] AI explanation failed at validation/inference stage. Exception type: {type(e).__name__}, Message: {str(e)}"
+            )
             fallback = (
                 f"Root Cause:\nThe deterministic analyzer identified {vulnerability_type} at line {line_num}. "
                 f"The provided code snippet uses operations that may be unsafe without sufficient bounds or null checks.\n\n"

@@ -2,7 +2,6 @@ import re
 import os
 from typing import List, Dict, Optional
 
-
 # ------------------------------------------------------------------
 # Severity mappings
 # ------------------------------------------------------------------
@@ -28,43 +27,43 @@ _MSVC_SEVERITY_MAP = {
 
 # GCC/Clang:  file.c:10:3: warning: message [-Wformat]
 _GCC_PATTERN = re.compile(
-    r'^(?P<file>[^:]+):(?P<line>\d+):(?:\d+:)?\s*'
-    r'(?P<severity>warning|error|fatal error|note):\s*'
-    r'(?P<message>[^\[]+)'
-    r'(?:\[(?P<code>[^\]]+)\])?',
+    r"^(?P<file>[^:]+):(?P<line>\d+):(?:\d+:)?\s*"
+    r"(?P<severity>warning|error|fatal error|note):\s*"
+    r"(?P<message>[^\[]+)"
+    r"(?:\[(?P<code>[^\]]+)\])?",
     re.IGNORECASE,
 )
 
 # MSVC:  file.c(10): warning C4101: message
 _MSVC_PATTERN = re.compile(
-    r'^(?P<file>[^(]+)\((?P<line>\d+)\):\s*'
-    r'(?P<severity>warning|error|fatal error|note)\s+'
-    r'(?P<code>[A-Z]\d+):\s*'
-    r'(?P<message>.+)',
+    r"^(?P<file>[^(]+)\((?P<line>\d+)\):\s*"
+    r"(?P<severity>warning|error|fatal error|note)\s+"
+    r"(?P<code>[A-Z]\d+):\s*"
+    r"(?P<message>.+)",
     re.IGNORECASE,
 )
 
 # IAR:  "file.c",10  Warning[Pa082]: message
 _IAR_PATTERN = re.compile(
     r'^"(?P<file>[^"]+)",(?P<line>\d+)\s+'
-    r'(?P<severity>Warning|Error|Fatal)\[(?P<code>[^\]]+)\]:\s*'
-    r'(?P<message>.+)',
+    r"(?P<severity>Warning|Error|Fatal)\[(?P<code>[^\]]+)\]:\s*"
+    r"(?P<message>.+)",
     re.IGNORECASE,
 )
 
 # Make / generic error reference:  make[1]: *** [file.c:10] Error 1
 _MAKE_ERROR_PATTERN = re.compile(
-    r'make.*:\s+\*+\s+\[(?P<file>[^:]+):(?P<line>\d+)\]\s+Error\s+(?P<code>\d+)',
+    r"make.*:\s+\*+\s+\[(?P<file>[^:]+):(?P<line>\d+)\]\s+Error\s+(?P<code>\d+)",
     re.IGNORECASE,
 )
 
 # Cppcheck XML-style inline messages (text form):
 #   [file.c:10]: (error) message  [ruleId]
 _CPPCHECK_TEXT_PATTERN = re.compile(
-    r'^\[(?P<file>[^:]+):(?P<line>\d+)\]:\s+'
-    r'\((?P<severity>\w+)\)\s+'
-    r'(?P<message>[^\[]+)'
-    r'(?:\[(?P<code>[^\]]+)\])?',
+    r"^\[(?P<file>[^:]+):(?P<line>\d+)\]:\s+"
+    r"\((?P<severity>\w+)\)\s+"
+    r"(?P<message>[^\[]+)"
+    r"(?:\[(?P<code>[^\]]+)\])?",
 )
 
 
@@ -84,28 +83,28 @@ def _try_patterns(line: str) -> Optional[Dict]:
         m = pattern.match(line.strip())
         if m:
             return {
-                "file":     m.group("file").strip(),
-                "line":     int(m.group("line")),
+                "file": m.group("file").strip(),
+                "line": int(m.group("line")),
                 "severity": _map_severity(m.group("severity"), sev_table),
-                "message":  m.group("message").strip(),
-                "code":     (m.group("code") or "").strip(),
-                "source":   "COMPILER",
+                "message": m.group("message").strip(),
+                "code": (m.group("code") or "").strip(),
+                "source": "COMPILER",
                 "category": "COMPILER_WARNING",
-                "type":     "COMPILER_WARNING",
+                "type": "COMPILER_WARNING",
             }
 
     # Make error (no message text available)
     m = _MAKE_ERROR_PATTERN.match(line.strip())
     if m:
         return {
-            "file":     m.group("file").strip(),
-            "line":     int(m.group("line")),
+            "file": m.group("file").strip(),
+            "line": int(m.group("line")),
             "severity": "HIGH",
-            "message":  f"Build error {m.group('code')}",
-            "code":     f"MAKE_ERR_{m.group('code')}",
-            "source":   "COMPILER",
+            "message": f"Build error {m.group('code')}",
+            "code": f"MAKE_ERR_{m.group('code')}",
+            "source": "COMPILER",
             "category": "COMPILER_WARNING",
-            "type":     "COMPILER_WARNING",
+            "type": "COMPILER_WARNING",
         }
 
     return None
@@ -166,10 +165,7 @@ def associate_warnings_with_repo(
         warn_basename = os.path.basename(warn_file).lower()
         warn_rel = warn_file.lower().replace("\\", "/")
 
-        matched_file = (
-            repo_index.get(warn_basename)
-            or repo_index.get(warn_rel)
-        )
+        matched_file = repo_index.get(warn_basename) or repo_index.get(warn_rel)
 
         if matched_file:
             warning["repo_found"] = True
@@ -188,4 +184,3 @@ def associate_warnings_with_repo(
             warning["code"] = ""
 
     return warnings
-
