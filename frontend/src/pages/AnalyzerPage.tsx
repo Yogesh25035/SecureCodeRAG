@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { analyzeCode } from "../api/analyzer";
-import type { AnalysisResult } from "../types/analysis";
+import type { AnalysisResult, AnalysisResponse } from "../types/analysis";
 import { Shield, Search, Loader2, Trash2, ShieldCheck, History } from "lucide-react";
 
 import CodeEditor from "../components/CodeEditor";
@@ -24,7 +24,7 @@ export default function AnalyzerPage() {
   const [filePath, setFilePath] = useState<string | undefined>();
   const [language, setLanguage] = useState<string>("python");
   const [results, setResults] = useState<AnalysisResult[]>([]);
-  const [analysisResponse, setAnalysisResponse] = useState<any>(null);
+  const [analysisResponse, setAnalysisResponse] = useState<AnalysisResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);

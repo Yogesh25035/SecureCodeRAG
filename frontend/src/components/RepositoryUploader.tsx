@@ -48,8 +48,8 @@ export default function RepositoryUploader({ onFileSelect }: RepositoryUploaderP
       setProjectId(data.project_id);
       setProjectName(data.project_name);
       setFiles(data.files || []);
-    } catch (err: any) {
-      setError(err.message || "Upload failed");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Code, Hash, Sun, Moon } from "lucide-react";
 import styles from "./CodeEditor.module.css";
 
@@ -8,17 +8,16 @@ interface Props {
 }
 
 export default function CodeEditor({ value, onChange }: Props) {
-  const [lineCount, setLineCount] = useState(1);
   const [activeLine, setActiveLine] = useState(1);
   const [isDark, setIsDark] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
 
   const lines = value ? value.split("\n") : [""];
+  const lineCount = lines.length;
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e.target.value);
-    setLineCount(e.target.value.split("\n").length || 1);
   };
 
   const handleCursorChange = () => {
@@ -34,10 +33,6 @@ export default function CodeEditor({ value, onChange }: Props) {
       lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
     }
   };
-
-  useEffect(() => {
-    setLineCount(lines.length);
-  }, [lines.length]);
 
   return (
     <div className={`${styles.container} ${isDark ? styles.dark : styles.light}`}>

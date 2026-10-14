@@ -30,7 +30,7 @@ export default function App() {
       } else {
         setError("Invalid username or password");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to connect to the server");
     }
   };
@@ -44,7 +44,8 @@ export default function App() {
   useEffect(() => {
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
-      let [resource, config] = args;
+      const resource = args[0];
+      let config = args[1];
       if (token) {
         config = config || {};
         config.headers = {
